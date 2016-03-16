@@ -1,0 +1,72 @@
+###创建者模式
+####创建者模式优点
+在创建者模式中客户端不再负责对象的创建和组装，而是由一个具体的组装类来完成这项功能，将组装的责任交给组装类，客户端只负责对象的调用，从而更加明确了各个类的职责。
+
+####创建者模式缺点
+缺点：利用创建者模式可以创建出不同类型的产品，但是如果要创建的产品差异非常大就需要编写多个创建者类来实现，这无疑增加了代码的复杂性，而且创建者类只是在构造相关部件的发杂关系上有优势，如果要增加一个部件还是需要改变原有的代码，增加新的模块。
+
+####创建者模式和工厂模式区别
+工厂模式（工厂方法，简单工厂，抽象工厂）的关注点仅仅是最终产品，而建造者模式关注的除了产品之外，它还关心着产品构造的细节，这一点是Builder模式和Factory模式最显著的区别。
+
+![创建者类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%88%9B%E5%BB%BA%E8%80%85.jpg)
+
+####创建者模式代码实现建房子
+	我要一座房子住，可是我不知道怎么盖（简单的砌墙，层次较低），也不知道怎么样设计（建几个房间，几个门好看，层次较高），于是我需要找一帮民工，他们会砌墙，还得找个设计师，他知道怎么设计，我还要确保民工听设计师的领导，而设计师本身也不干活，光是下命令，这里砌一堵墙，这里砌一扇门，这样民工开始建设，最后，我可以向民工要房子了。在这个过程中，设计师是什么也没有，除了他脑子里的设计和命令，所以要房子也是跟民工要，记住了！
+
+```
+// 工人接口，定义了各个工人所要进行的工所作。他们负责进行具体部件如窗户，地板的建造。
+// 同时因为房子是民工建的，因此建设完成后由他把房子递交回房主
+public interface Builder {
+    void makeWindow();
+    void makeFloor();
+    Room getRoom();
+}
+
+// 具体的工人->名工建造
+public class MingGong implements Builder {
+    private  String window="";
+    private  String floor="";
+
+    public  void makeWindow() {
+        window=new String("window");
+    }
+
+    public  void makeFloor(){
+        floor=new String("floor");
+    }
+
+    // 回交房子给房主
+    public  Room  getRoom() {
+        if((!window.equals(""))&&(!floor.equals(""))) {
+            System.out.println("room ready!");
+            return new Room();
+        }
+        else return null;
+    }
+}
+
+//设计者设计房屋但是自己不去建造,指挥工人去建造
+public class Designer {
+    public void order(Builder builder){
+        builder.makeWindow();
+        builder.makeFloor();
+    }
+}
+
+//最终的产品－>房屋
+public class Room {
+}
+
+public class Client {
+    public static void main(String[] args) {
+        //建造者
+        Builder builder = new MingGong();
+        //设计师
+        Designer designer = new Designer();
+        //指挥建造
+        designer.order(builder);
+        //获取房屋
+        builder.getRoom();
+    }
+}	
+```
