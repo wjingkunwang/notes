@@ -34,21 +34,21 @@
 **特点：真正用的时候加载，资源的利用率高，但是每次调用的时候需要同步，并发下效率低**
 
 ```
-	public class SingletonDemo1 {
-	    //调用的时候加载
-	    private static SingletonDemo1 instance = null;
-	    //私有化构造器
-	    private SingletonDemo1() {
-	    }
-	    //方法同步,调用效率低
-	    //为什么加锁：多线程下，不加锁会产生多个实例
-	    public static synchronized SingletonDemo1 getInstance() {
-	        if (instance == null) {
-	            instance = new SingletonDemo1();
-	        }
-	        return instance;
-	    }
-	}
+public class SingletonDemo1 {
+    //调用的时候加载
+    private static SingletonDemo1 instance = null;
+    //私有化构造器
+    private SingletonDemo1() {
+    }
+    //方法同步,调用效率低
+    //为什么加锁：多线程下，不加锁会产生多个实例
+    public static synchronized SingletonDemo1 getInstance() {
+        if (instance == null) {
+            instance = new SingletonDemo1();
+        }
+        return instance;
+    }
+}
 
 ```
 #####饿汉式静态内部类实现
@@ -61,17 +61,17 @@
 * 兼具并发高效和延时加载的优势
 
 ```
-	public class SingletonDemo2 {
-	    private static class singletonClass {
-	        private static final SingletonDemo2 instance = new SingletonDemo2();
-	    }
-	    public static SingletonDemo2 getInstance() {
-	        return singletonClass.instance;
-	    }
-	    private SingletonDemo2() {
+public class SingletonDemo2 {
+    private static class singletonClass {
+        private static final SingletonDemo2 instance = new SingletonDemo2();
+    }
+    public static SingletonDemo2 getInstance() {
+        return singletonClass.instance;
+    }
+    private SingletonDemo2() {
 
-	    }
-	}
+    }
+}
 
 ```
 

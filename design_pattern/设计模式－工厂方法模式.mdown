@@ -14,81 +14,80 @@
 ####代码实现女娃造人
 
 ```	
-	//抽象工厂
-	public abstract class AbstractHumanFactory {
-	    abstract Human createHuman(Class<? extends Human> c);
-	}
-	//女娃的八卦炉
-	public class HumanFactory extends AbstractHumanFactory {
-    @Override
-	    Human createHuman(Class<? extends Human> c) {
-	        Human human = null;
-	        try {
-	            Class clazz = Class.forName(c.getName());
-	            human = (Human) clazz.newInstance();
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	        return human;
-	    }
-	}
-	//人接口
-	public interface Human {
-	    public void getColor();
-	    public void talk();
-	}
-	//黑人
-	public class BlackHuman implements Human {
-	    public void getColor() {
-	        System.out.println("黑人的皮肤是黑色的");
-	    }
-	    public void talk() {
-	        System.out.println("黑人说的话听不懂");
-	    }
-	}
-	//白人
-	public class WhiteHuman implements Human {
-	    public void getColor() {
-	        System.out.println("白人的皮肤是白色的");
-	    }
-	    public void talk() {
-	        System.out.println("白种人说的话是单字节");
-	    }
-	}
-	//黄人
-	public class YellowHuman implements Human {
-	    public void getColor() {
-	        System.out.println("黄种人的皮肤是黄色的");
-	    }
-	    public void talk() {
-	        System.out.println("黄种人说的话是双字节");
-	    }
-	}
-	//女娃开始造人
-	public class NvWa {
-	    public static void main(String[] args) {
-	        //声明阴阳八卦炉
-	        AbstractHumanFactory YinYangLu = new HumanFactory();
-	        //第一次火候不够造就白人
-	        System.out.println("*******造白人*******");
-	        Human whiteHuman = YinYangLu.createHuman(WhiteHuman.class);
-	        whiteHuman.getColor();
-	        whiteHuman.talk();
+//抽象工厂
+public abstract class AbstractHumanFactory {
+    abstract Human createHuman(Class<? extends Human> c);
+}
+//女娃的八卦炉
+public class HumanFactory extends AbstractHumanFactory {
+@Override
+    Human createHuman(Class<? extends Human> c) {
+        Human human = null;
+        try {
+            Class clazz = Class.forName(c.getName());
+            human = (Human) clazz.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return human;
+    }
+}
+//人接口
+public interface Human {
+    public void getColor();
+    public void talk();
+}
+//黑人
+public class BlackHuman implements Human {
+    public void getColor() {
+        System.out.println("黑人的皮肤是黑色的");
+    }
+    public void talk() {
+        System.out.println("黑人说的话听不懂");
+    }
+}
+//白人
+public class WhiteHuman implements Human {
+    public void getColor() {
+        System.out.println("白人的皮肤是白色的");
+    }
+    public void talk() {
+        System.out.println("白种人说的话是单字节");
+    }
+}
+//黄人
+public class YellowHuman implements Human {
+    public void getColor() {
+        System.out.println("黄种人的皮肤是黄色的");
+    }
+    public void talk() {
+        System.out.println("黄种人说的话是双字节");
+    }
+}
+//女娃开始造人
+public class NvWa {
+    public static void main(String[] args) {
+        //声明阴阳八卦炉
+        AbstractHumanFactory YinYangLu = new HumanFactory();
+        //第一次火候不够造就白人
+        System.out.println("*******造白人*******");
+        Human whiteHuman = YinYangLu.createHuman(WhiteHuman.class);
+        whiteHuman.getColor();
+        whiteHuman.talk();
 
-	        //第二次火候大了造就黑人
-	        System.out.println("*******造黑人*******");
-	        Human blackHuman = YinYangLu.createHuman(BlackHuman.class);
-	        blackHuman.getColor();
-	        blackHuman.talk();
+        //第二次火候大了造就黑人
+        System.out.println("*******造黑人*******");
+        Human blackHuman = YinYangLu.createHuman(BlackHuman.class);
+        blackHuman.getColor();
+        blackHuman.talk();
 
-	        //第三次火候刚好造就黄人
-	        System.out.println("*******造黄人*******");
-	        Human yellowHuman = YinYangLu.createHuman(YellowHuman.class);
-	        yellowHuman.getColor();
-	        yellowHuman.talk();
-	    }
-	}
-
+        //第三次火候刚好造就黄人
+        System.out.println("*******造黄人*******");
+        Human yellowHuman = YinYangLu.createHuman(YellowHuman.class);
+        yellowHuman.getColor();
+        yellowHuman.talk();
+    }
+}
 ```
 
 [工厂模式方法比较：](http://www.cnblogs.com/cbf4life/archive/2009/12/20/1628494.html)

@@ -1,0 +1,9 @@
+###创建型
+![工厂方法，简单工厂](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%88%9B%E5%BB%BA%E5%9E%8B1.png)
+![抽象工厂，创建者](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%88%9B%E5%BB%BA%E5%9E%8B2.png)
+![单例，原型](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%88%9B%E5%BB%BA%E5%9E%8B3.png)
+####单例模式
+####工厂方法模式
+####抽象工厂模式
+####创建者模式
+####原型模式
