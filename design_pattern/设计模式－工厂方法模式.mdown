@@ -1,0 +1,94 @@
+###工厂方法模式
+
+![类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E9%80%9A%E7%94%A8.gif)
+
+####优点
+* 良好的封装性，代码结构清晰。创建一个对象只要只知道对象的类名，不用知道创建对象的艰辛过程，减少模块间的耦合。
+
+* 扩展性非常优秀。在增加产品类的情况下，只要适当地修改具体的工厂类或扩展一个工厂类。例如在下面的例子中，需要增加一个棕色人种，则只需要增加一个BrownHuman类，工厂类不用任何修改就可完成系统扩展。
+
+* 屏蔽产品类。产品类的实现如何变化，调用者都不需要关心，它只需要关心产品的接口，只要接口保持不表，系统中的上层模块就不要发生变化，因为产品类的实例化工作是由工厂类负责，一个产品对象具体由哪一个产品生成是由工厂类决定的。例如数据库开发中 ：使用JDBC连接数据库，数据库从MySql切换到Oracle，需要改动地方就是切换一下驱动名称，其他的都不需要修改。
+
+![女娲造人](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%E2%80%94%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E5%A5%B3%E5%A8%B2.gif)
+
+####代码实现女娃造人
+
+```	
+	//抽象工厂
+	public abstract class AbstractHumanFactory {
+	    abstract Human createHuman(Class<? extends Human> c);
+	}
+	//女娃的八卦炉
+	public class HumanFactory extends AbstractHumanFactory {
+    @Override
+	    Human createHuman(Class<? extends Human> c) {
+	        Human human = null;
+	        try {
+	            Class clazz = Class.forName(c.getName());
+	            human = (Human) clazz.newInstance();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	        return human;
+	    }
+	}
+	//人接口
+	public interface Human {
+	    public void getColor();
+	    public void talk();
+	}
+	//黑人
+	public class BlackHuman implements Human {
+	    public void getColor() {
+	        System.out.println("黑人的皮肤是黑色的");
+	    }
+	    public void talk() {
+	        System.out.println("黑人说的话听不懂");
+	    }
+	}
+	//白人
+	public class WhiteHuman implements Human {
+	    public void getColor() {
+	        System.out.println("白人的皮肤是白色的");
+	    }
+	    public void talk() {
+	        System.out.println("白种人说的话是单字节");
+	    }
+	}
+	//黄人
+	public class YellowHuman implements Human {
+	    public void getColor() {
+	        System.out.println("黄种人的皮肤是黄色的");
+	    }
+	    public void talk() {
+	        System.out.println("黄种人说的话是双字节");
+	    }
+	}
+	//女娃开始造人
+	public class NvWa {
+	    public static void main(String[] args) {
+	        //声明阴阳八卦炉
+	        AbstractHumanFactory YinYangLu = new HumanFactory();
+	        //第一次火候不够造就白人
+	        System.out.println("*******造白人*******");
+	        Human whiteHuman = YinYangLu.createHuman(WhiteHuman.class);
+	        whiteHuman.getColor();
+	        whiteHuman.talk();
+
+	        //第二次火候大了造就黑人
+	        System.out.println("*******造黑人*******");
+	        Human blackHuman = YinYangLu.createHuman(BlackHuman.class);
+	        blackHuman.getColor();
+	        blackHuman.talk();
+
+	        //第三次火候刚好造就黄人
+	        System.out.println("*******造黄人*******");
+	        Human yellowHuman = YinYangLu.createHuman(YellowHuman.class);
+	        yellowHuman.getColor();
+	        yellowHuman.talk();
+	    }
+	}
+
+```
+
+[工厂模式方法比较：](http://www.cnblogs.com/cbf4life/archive/2009/12/20/1628494.html)

@@ -1,5 +1,5 @@
 ##创建型
-###抽象工厂模式
+
 ###工厂方法模式
 ###创建者模式
 ###原型模式
@@ -17,6 +17,7 @@
 
 * Spring中的bean
 
+![单例模式类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F.jpg)
 ####单例模式分类
 #####饿汉式
 **特点：减少系统开销**
