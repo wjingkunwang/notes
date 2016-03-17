@@ -1,0 +1,114 @@
+###桥接模式
+####桥接模式的特点
+>桥接模式的主要目的是将一个对象的变化因素抽象出来，不是通过类继承的方式来满足这个因素的变化，而是通过对象组合的方式来依赖因素的抽象，这样当依赖的因素的具体实现发生变化后，而我们的具体的引用却不用发生改变，因为我们的对象是依赖于抽象的，而不是具体的实现。
+
+![桥接模式类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F.JPG)
+
+####桥接模式代码实现
+
+```
+//路维度
+public abstract class AbstractRoad {
+    protected AbstractCar abstractCar;
+    public abstract void run();
+}
+
+public class Street extends AbstractRoad {
+    @Override
+    public void run() {
+        abstractCar.run();
+        System.out.println("街道跑");
+    }
+}
+
+public class SpeedWay extends AbstractRoad {
+    @Override
+    public void run() {
+        abstractCar.run();
+        System.out.println("高速路上跑");
+    }
+}
+//车维度
+public abstract class AbstractCar {
+    public abstract void run();
+}
+
+public class Bus extends AbstractCar{
+    @Override
+    public void run() {
+        System.out.print("公交车在");
+    }
+}
+
+public class Car extends AbstractCar{
+    @Override
+    public void run() {
+        System.out.print("小车在");
+    }
+}
+
+public class Client {
+    public static void main(String[] args) {
+        AbstractRoad road = new SpeedWay();
+        road.abstractCar = new Car();
+        road.run();
+
+        AbstractRoad road1 = new Street();
+        road1.abstractCar = new Bus();
+        road1.run();
+    }
+}
+
+运行结果：
+小车在高速路上跑
+公交车在街道跑
+
+```
+如果我们需要添加一个开车的司机呢，这个继续添加一个人维度便可以实现
+
+```
+//人维度
+public abstract class Human {
+    protected AbstractRoad road;
+    public abstract void run();
+}
+
+public class Man extends Human {
+    @Override
+    public void run() {
+        System.out.print("男人开着");
+        road.run();
+    }
+}
+
+public class Woman extends Human {
+    @Override
+    public void run() {
+        System.out.print("女人开着");
+        road.run();
+    }
+}
+
+public class Client {
+    public static void main(String[] args) {
+        Human man = new Man();
+        AbstractRoad road = new SpeedWay();
+        road.abstractCar = new Car();
+        man.road = road;
+        man.run();
+    }
+}
+运行结果：
+男人开着小车在高速路上跑
+
+```
+
+####桥接模式的使用场景
+
+1. 当一个对象有多个变化因素的时候，通过抽象这些变化因素，将依赖具体实现，修改为依赖抽象。
+
+2. 当某个变化因素在多个对象中共享时。我们可以抽象出这个变化因素，然后实现这些不同的变化因素。
+
+3. 当我们期望一个对象的多个变化因素可以动态的变化，而且不影响客户的程序的使用时。
+
+**注意：**桥接模式侧重的是纬度的变化，当一个对象因为多个维度而引起对象的变化时，我们可以考虑桥接模式。

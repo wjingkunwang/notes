@@ -1,0 +1,98 @@
+###适配器模式
+####适配器模式定义
+>适配器模式将一个类的接口，转换成客户期望的另一个接口。使得原本由于接口不兼容而不能一起工作的那些类可以在一起工作。
+
+**比如：**一个电脑需要两项插座，220V的电源，现在有三项插座和110V电源，如何让其工作呢，现在就需要插座适配器和电源适配器
+
+![类适配器:实现目标接口+继承以前的类](http://7xpxnz.com1.z0.glb.clouddn.com/%E7%B1%BB%E7%9A%84%E9%80%82%E9%85%8D%E5%99%A8.png)
+
+![对象的适配器:实现目标接口+成员变量(以前的类)](http://7xpxnz.com1.z0.glb.clouddn.com/%E5%AF%B9%E8%B1%A1%E7%9A%84%E9%80%82%E9%85%8D%E5%99%A8.png)
+
+####适配器模式代码实现
+
+```
+package com.immoc.pattern.adapter;
+
+public class GBTwoPlug {
+
+    public void powerWithTwo(){
+        System.out.println("使用二相电源");
+    }
+}
+package com.immoc.pattern.adapter;
+
+/**
+ * 三项插座接口
+ */
+public interface ThreePlugIf {
+
+    //使用三项电流供电
+    public void powerWithThree();
+}
+package com.immoc.pattern.adapter;
+
+/**
+ * 二相转三相的插座适配器（采用组合方式）
+ */
+public class TwoPlugAdapter implements ThreePlugIf {
+
+    private GBTwoPlug plug;
+
+    public TwoPlugAdapter(GBTwoPlug plug) {
+        this.plug = plug;
+    }
+
+    public void powerWithThree() {
+        System.out.println("通过转换");
+        //对适配器原有接口方法的调用被委托给新接口的实例的特定方法 
+        plug.powerWithTwo();
+    }
+}
+package com.immoc.pattern.adapter;
+
+/**
+ * 采用继承的方式
+ */
+public class TwoPlugAdapterExtends extends GBTwoPlug implements ThreePlugIf {
+    public void powerWithThree() {
+        System.out.println("借助继承适配器");
+        this.powerWithTwo();
+    }
+}
+package com.immoc.pattern.adapter;
+
+
+public class NoteBook {
+    private  ThreePlugIf plug;
+    public NoteBook(ThreePlugIf plug) {
+        this.plug = plug;
+    }
+    //使用插座充电
+    public void charge(){
+        plug.powerWithThree();
+    }
+
+    public static void main(String[] args) {
+        GBTwoPlug two = new GBTwoPlug();
+        ThreePlugIf three = new TwoPlugAdapter(two);
+        NoteBook nb = new NoteBook(three);
+        nb.charge();
+
+        three = new TwoPlugAdapterExtends();
+        nb = new NoteBook(three);
+        nb.charge();
+    }
+}
+```
+
+####适配器模式优点
+1. 透明
+    通过适配器，客户端可以调用同一接口，因而对客户端来说是透明的，这样坐更简单，更直接，更紧凑（日志框架设计）。
+
+2. 重用
+    复用了现存的类，解决了现存类和复用环境要求不一致的问题(代码重构)。
+
+3. 低耦合
+    将目标类和适配者类解耦，通过引入一个适配其类重用现有的适配类，而无需修改原有的代码（遵守开闭原则（对修改关闭，对扩展开放））
+
+
