@@ -1,0 +1,63 @@
+###装饰模式意图
+　　　　装饰模式以对客户透明的方式动态地给一个对象附加上更多的责任。换言之，客户端并不会觉得对象在装饰前和装饰后有什么不同。装饰模式可以在不使用创造更多子类的情况下，将对象的功能加以扩展。
+
+![类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E8%A3%85%E9%A5%B0%E6%A8%A1%E5%BC%8F.png)
+
+####齐天大圣72变话说装饰模式
+![齐天大圣](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E8%A3%85%E9%A5%B0%EF%BC%8D%E9%BD%90%E5%A4%A9%E5%A4%A7%E5%9C%A3.png)
+
+#####代码实现
+
+````
+//抽象组件 齐天大圣
+public interface TheGreatestSage {
+    void move();
+}
+//构建组建角色 猴子
+public class Monkey implements TheGreatestSage {
+    public void move() {
+        System.out.println("monkey is moving");
+    }
+}
+//抽象装饰角色  72变
+public  class Change implements TheGreatestSage {
+    public void move() {
+        System.out.println("看我72变");
+    }
+}
+//具体装饰角色 🐟
+public class Fish extends Change {
+    public Fish(TheGreatestSage theGreatestSage) {
+        super();
+    }
+    public void move() {
+        System.out.println("swimming");
+    }
+}
+//🐦
+public class Bird extends Change {
+    private TheGreatestSage theGreatestSage;
+    public Bird(TheGreatestSage theGreatestSage) {
+        super();
+        this.theGreatestSage = theGreatestSage;
+    }
+    public void move() {
+        theGreatestSage.move();
+        super.move();
+        System.out.println("flying");
+    }
+}
+public class Client {
+    public static void main(String[] args) {
+        Change bird = new Bird(new Monkey());
+        bird.move();
+    }
+}
+//执行结果：
+monkey is moving
+看我72变
+flying
+````
+####装饰模式的引用
+**参考**
+[http://www.cnblogs.com/java-my-life/archive/2012/04/20/2455726.html](http://www.cnblogs.com/java-my-life/archive/2012/04/20/2455726.html)
