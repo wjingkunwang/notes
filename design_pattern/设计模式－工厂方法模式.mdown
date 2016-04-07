@@ -1,5 +1,4 @@
 ###工厂方法模式
-
 ![类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%B1%BB%E5%9B%BE%EF%BC%8D%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E9%80%9A%E7%94%A8.gif)
 
 ####优点

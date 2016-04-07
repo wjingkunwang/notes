@@ -25,7 +25,7 @@ public  class Change implements TheGreatestSage {
         System.out.println("看我72变");
     }
 }
-//具体装饰角色 🐟
+//具体装饰角色－鱼
 public class Fish extends Change {
     public Fish(TheGreatestSage theGreatestSage) {
         super();
@@ -34,7 +34,7 @@ public class Fish extends Change {
         System.out.println("swimming");
     }
 }
-//🐦
+//具体装饰角色－鸟
 public class Bird extends Change {
     private TheGreatestSage theGreatestSage;
     public Bird(TheGreatestSage theGreatestSage) {
