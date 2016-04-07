@@ -1,0 +1,45 @@
+###Spring容器内部工作机制
+####Spring启动时执行的操作
+AbstractApplicationContext是ApplicationContext的抽象实现类，它的refresh方法定义了Spring启动时执行的操作。
+
+**AbstractApplicationContext中refresh()方法源码片段**
+
+```
+//初始化BeanFacoty
+prepareRefresh();
+ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+prepareBeanFactory(beanFactory);
+
+// Allows post-processing of the bean factory in context subclasses.
+postProcessBeanFactory(beanFactory);
+
+// 调用后工厂后置处理器
+invokeBeanFactoryPostProcessors(beanFactory);
+
+// 注册Bean后置处理器
+registerBeanPostProcessors(beanFactory);
+
+// 初始化消息源
+initMessageSource();
+
+// 初始化容器事件广播器
+initApplicationEventMulticaster();
+
+// 初始化其他特殊的Bean，这是个钩子方法，子类中具体实现
+onRefresh();
+
+// 注册事件监听器
+registerListeners();
+
+// 初始化所有单例的Bean
+finishBeanFactoryInitialization(beanFactory);
+
+//完成刷新并发布容器刷新事件
+finishRefresh();
+
+```
+![Spring启动时执行的操作图](http://7xpxnz.com1.z0.glb.clouddn.com/Spring%E5%AE%B9%E5%99%A8%E5%86%85%E9%83%A8%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6.jpg)
+
+1. ResourceLoader加载配置
+
+2. BeanDefinitionReader解析配置文件
