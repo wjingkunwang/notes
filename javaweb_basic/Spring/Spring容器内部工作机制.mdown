@@ -5,6 +5,7 @@ AbstractApplicationContext是ApplicationContext的抽象实现类，它的refres
 **AbstractApplicationContext中refresh()方法源码片段**
 
 ```
+使用设计模式的模版模式
 //初始化BeanFacoty
 prepareRefresh();
 ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();

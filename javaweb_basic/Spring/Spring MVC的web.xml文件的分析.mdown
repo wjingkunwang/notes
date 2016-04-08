@@ -1,0 +1,147 @@
+###web.xml
+```
+<listener>
+<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath*:applicationContext-*.xml</param-value>
+</context-param>
+
+<servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:dispatcher-servlet.xml</param-value>
+    </init-param>
+    <load-on-startup>0</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+```
+
+###ContextLoaderListener的作用
+ContextLoaderListener的作用是初始ApplicationContext（默认的是XmlWebApplicationContext）然后将其放在ServletContext中。
+
+initWebApplicationContext方法中的下面代码
+
+```
+servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
+
+configureAndRefreshWebApplicationContext根据配置文件初始化bean
+配置文件片段：
+<param-name>contextConfigLocation</param-name>
+<param-value>classpath*:dispatcher-servlet.xml</param-value>
+
+读取配置文件源码片段：
+configLocationParam = sc.getInitParameter("contextConfigLocation");
+if(configLocationParam != null) {
+    wac.setConfigLocation(configLocationParam);
+}
+```
+
+####ServletContext作用
+1. 每一个web应用都有一个 ServletContext与之相关联。 
+
+2. ServletContext对象在应用启动的被创建，在应用关闭的时候被销毁。 
+
+3. ServletContext在全局范围内有效，类似于应用中的一个全局变量。
+
+###DispatcherServlet的作用
+![DispatcherServlet类图](http://7xpxnz.com1.z0.glb.clouddn.com/dispatchservlet%E7%B1%BB%E5%9B%BE.png)
+
+####HttpServletBean作用
+HttpServletBean的作用主要是做一些初始化，讲web.xml中配置的参数设置到Servlet中
+
+//比如初始化init-param中的参数
+<init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:dispatcher-servlet.xml</param-value>
+</init-param>
+
+```
+//源码片段
+HttpServletBean.ServletConfigPropertyValues ex = new HttpServletBean.ServletConfigPropertyValues(this.getServletConfig(), this.requiredProperties);
+BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
+ServletContextResourceLoader resourceLoader = new ServletContextResourceLoader(this.getServletContext());
+bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, this.getEnvironment()));
+this.initBeanWrapper(bw);
+bw.setPropertyValues(ex, true);
+```
+
+####FrameworkServlet作用
+FrameworkServlet的作用讲Servlet和Spring容器关联。其实也就是初始化FrameworkServlet的属性webApplicationContext，这个属性代表SpringMVC上下文，它有个父类上下文，既web.xml中配置的ContextLoaderListener监听器初始化的容器上下文。
+
+```
+//源码片段
+protected WebApplicationContext initWebApplicationContext() {
+ //这个设置springMVC的父类上下文为ContextLoaderListener初始化的容器上下文
+        WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(this.getServletContext());
+        WebApplicationContext wac = null;
+        if(this.webApplicationContext != null) {
+            wac = this.webApplicationContext;
+            if(wac instanceof ConfigurableWebApplicationContext) {
+                ConfigurableWebApplicationContext attrName = (ConfigurableWebApplicationContext)wac;
+                if(!attrName.isActive()) {
+                    if(attrName.getParent() == null) {
+                        attrName.setParent(rootContext);
+                    }
+                    this.configureAndRefreshWebApplicationContext(attrName);
+                }
+            }
+        }
+        if(wac == null) {
+            wac = this.findWebApplicationContext();//一般返回的都是null
+            //具体实现，获取DispatcherServlet的applicationContext
+            //WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(this.getServletContext(), attrName);
+        }
+        if(wac == null) {
+            wac = this.createWebApplicationContext(rootContext);
+        }
+        if(!this.refreshEventReceived) {
+            this.onRefresh(wac);
+        }
+        if(this.publishContext) {
+            //attrName1=org.springframework.web.servlet.FrameworkServlet.CONTEXT.dispatcher
+            String attrName1 = this.getServletContextAttributeName();
+            //新创建的容器上下文设置到ServletContext中
+            this.getServletContext().setAttribute(attrName1, wac);
+            if(this.logger.isDebugEnabled()) {
+                this.logger.debug("Published WebApplicationContext of servlet \'" + this.getServletName() + "\' as ServletContext attribute with name [" + attrName1 + "]");
+            }
+        }
+        return wac;
+    }
+```
+
+DispatcherServlet覆写了FrameworkServlet中的onRefresh()方法，onRefresh()方法是钩子方法，子类可以重写自己特有的方法。
+
+protected void onRefresh(ApplicationContext context) {
+    this.initStrategies(context);
+}
+//初始化DispatcherServlet使用的策略
+
+```
+protected void initStrategies(ApplicationContext context) {
+    this.initMultipartResolver(context);
+    this.initLocaleResolver(context);
+    this.initThemeResolver(context);
+    this.initHandlerMappings(context);
+    this.initHandlerAdapters(context);
+    this.initHandlerExceptionResolvers(context);
+    this.initRequestToViewNameTranslator(context);
+    this.initViewResolvers(context);
+    this.initFlashMapManager(context);
+}
+```
+
+**总结**
+ ContextLoaderListener和DispatcherServlet都可以配置spring相关的XML，但是它们不是合并储存的，而是父子关系，所以建议：mvc相关的spring配置由DispatcherServlet加载，而其余的JavaBean都交给ContextLoaderListener加载
+
+
+
