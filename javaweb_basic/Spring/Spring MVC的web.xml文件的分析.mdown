@@ -124,9 +124,9 @@ DispatcherServlet覆写了FrameworkServlet中的onRefresh()方法，onRefresh()�
 protected void onRefresh(ApplicationContext context) {
     this.initStrategies(context);
 }
-//初始化DispatcherServlet使用的策略
 
 ```
+//初始化DispatcherServlet使用的策略
 protected void initStrategies(ApplicationContext context) {
     this.initMultipartResolver(context);
     this.initLocaleResolver(context);
