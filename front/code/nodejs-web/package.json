@@ -1,0 +1,12 @@
+{
+  "name": "nodejs-web",
+  "version": "1.0.0",
+  "devDependencies": {
+    "body-parser": "^1.15.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "mongoose": "^4.4.13"
+  }
+}
