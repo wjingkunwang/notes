@@ -1,0 +1,15 @@
+nginx的配置文件如下：
+
+1. location /lwm{
+	  proxy_pass http://127.0.0.1:8080;
+	}
+
+2. location /lwm/{
+ 	 proxy_pass http://127.0.0.1:8080;
+	}
+
+tomcat配置如下：
+<Context path="/lwm" docBase="/data/work/lwm" debug="0" reloadable="false" />
+
+前端/lwm/lwm 按照nginx的1配置后，/lwm/lwm。按照nginx的1配置后，/lwm
+

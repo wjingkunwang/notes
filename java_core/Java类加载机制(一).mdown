@@ -1,0 +1,210 @@
+##类加载机制
+	JVM把class文件加载到内存，并对数据进行校验、解析和初始化，最终形成
+	JVM可以直接运行的Java类型的过程。
+
+##类加载过程
+	Java类加载的过程：
+	    加载————>验证－>准备－>解析————>初始化————>使用————>卸载
+	    (验证－>准备－>解析  统称为链接)
+
+###加载
+	将class文件字节码内容加载到内存中，并将这些静态数据转换为方法区的运行 时数据结构，在堆中生成一个代表这个类的java.lang.Class对象，作为 方法区类数据访问的入口。（这个过程需要类加载器参与）
+
+###链接
+* 验证:确保加载的类信息符合JVM规范，没有安全方面的问题。 
+
+* 准备:正式为类变量（static变量）分配内存并设置类变量初始值的接段， 这些内存都将在方法区中进行分配。 
+
+* 解析:虚拟机产量池内的符号引用替换为直接引用的过程。对同一个符号引用进行多次解析请求是很常见的，虚拟机实现可能会对第一次解析的结果进行缓存（将直接引用保存在运行时常量池中），解析动作主要针对类或接口、字段、类方法、接口方法四类符号引用进行。
+
+符号引用：用一组任何形式的字面量描述所引用的目标，符号引用与虚拟机实现的内存布局无关，若果有了符号引用，引用目标并不一定加载到内存中。 
+
+直接引用：直接指向目标的指针、相对偏移量或一个能间接定位到目标的句柄，符号引用与虚拟机实现的内存布局无关，如果有了直接引用，引用目标一定加载到内存中。
+
+###初始化
+* 初始化阶段执行类构造器()方法的过程，<clinit>()方法是由 编译器自动收集类中的所有类变量的赋值动作和静态语句块（static块）中的语句 合并产生的。
+
+* 当一个类被初始化的时候，如果其父类没有被初始化时，则先初始化其父类。
+
+* 虚拟机保证一个类的<clinit>()方法在多线程环境中被准确加锁和同步，即线程安全。
+
+* 当访问一个Java类的静态域时，只有真正声明这个域的类才会被初始化。
+
+```
+/**
+ * static代码块按顺序执行,
+ * 初始话子类时,父类没有初始化,则先初始化父类
+ */
+public class Demo {
+    static {
+        System.out.println("Demo静态初始化块");
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException {
+        System.out.println("Demo的main方法");
+        A a = new A();
+    }
+}
+
+class A extends A_Father {
+    static {
+        System.out.println("A静态初始化块");
+    }
+
+    public A() {
+        System.out.println("创建A对象");
+    }
+}
+
+class A_Father {
+    static {
+        System.out.println("A_Father静态初始化块");
+    }
+
+}
+
+//执行结果
+Demo静态初始化块
+Demo的main方法
+A_Father静态初始化块
+A静态初始化块
+创建A对象
+```
+####主动引用
+
+1. new一个类对象
+
+2. 调用类的静态成员（除去final常量）和静态方法
+
+3. 使用java.lang.reflect包的方法对类进行反射调用
+
+4. 当虚拟机启动，java Demo,则一定初始化Demo类，其实就是先启动main方法所在的类
+
+5. 初始化一个类，如果它的父类没有被初始化，则先初始化它的父类
+
+```
+public class Demo {
+    //调用类的静态方法
+    public static void main(String[] args) throws ClassNotFoundException {
+        System.out.println("Demo的main方法");
+        //调用类的静态成员
+        A a = new A();
+        //反射
+        Class.forName("leijiazai.a.A");//没有初始化信息，即一个类只被初始化一次。
+    }
+}
+
+class A extends A_Father {
+    private static int i = 100;
+
+    static {
+        System.out.println("A静态初始化块");
+    }
+
+    public A() {
+        System.out.println("创建A对象");
+    }
+}
+//A的父类
+class A_Father {
+    static {
+        System.out.println("A_Father静态初始化块");
+    }
+
+}
+//结果
+Demo的main方法
+A_Father静态初始化块
+A静态初始化块
+创建A对象
+```
+
+#####被动引用
+1. 访问一个静态域，只有真正声明这个域的类才会被初始化 ———— 通过子类引用父类的静态变量，不会导致子类被初始化
+
+2. 通过数组定义类引用，不会触发此类的初始化
+
+3. 引用常量不会触发此类的初始化（常量在编译阶段就存入调用类的常量池中)
+
+```
+public class Demo {
+    public static void main(String[] args) throws ClassNotFoundException {
+        //访问一个A父类静态域
+        System.out.println(A.j);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~");
+        //数组定义类引用
+        A[] as = new A[10];//没有输出
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~");
+        //引用常量
+        System.out.println(A.i);
+    }
+}
+
+class A extends A_Father {
+    public static int i = 100;
+
+    static {
+        System.out.println("A静态初始化块");
+    }
+
+    public A() {
+        System.out.println("创建A对象");
+    }
+}
+
+class A_Father {
+    public static int j = 200;
+
+    static {
+        System.out.println("A_Father静态初始化块");
+    }
+
+}
+//结果
+A_Father静态初始化块
+200
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+A静态初始化块
+100
+```
+
+##类的初始化过程
+```
+Student student = new Student()在内存中做了哪些事情?
+```
+
+1. 加载Student.class文件进内存
+
+2. 在栈内存为student开辟空间
+
+3. 在堆内存为学生对象开辟空间
+
+4. 对学生对象的成员变量进行默认初始化
+
+5. 对学生对象的成员变量进行显示初始化
+
+6. 通过构造方法对学生对象的成员变量赋值
+
+7. 学生对象初始化完毕，把对象地址赋值给student变量
+
+````
+public class Student {
+    private int age = 100;
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public Student(int age) {
+        this.age = age;
+    }
+    public static void main(String[] args) {
+        Student student = new Student(1);
+        System.out.println(student.getAge());
+        student.setAge(10);
+        System.out.println(student.getAge());
+    }
+}
+```

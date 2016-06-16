@@ -65,6 +65,28 @@ Outerclass.this.member
 静态内部类可以调用 外部类的静态属性和方法，不能调用普通
 方法和属性。
 
+**内部类不能有static成员**
+An inner class is a nested class that is not explicitly or implicitly declared static. Inner classes may not declare static initializers (§8.7) or member interfaces. Inner classes may not declare static members, unless they are compile-time constant fields (§15.28).
+
+```
+public class A {
+    class B{
+          static int i = 0;//编译报错
+    }
+}
+
+public class A {
+    class B {
+        final static int i = 0;//常量
+    }
+}
+
+public class A {
+   static class B {
+         static int i = 0;//静态内部类
+    }
+}
+	```
 
 
 

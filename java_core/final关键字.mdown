@@ -1,0 +1,90 @@
+一、简介
+
+　　final修饰符可以用来修饰变量、方法、类。final修饰变量时一旦被赋值就不可以改变。
+
+二、final成员变量
+
+　　成员变量是随类初始化或对象初始化而初始化的。当类初始化的时候，会给类变量分配内存；当对象初始化的时候，会给实例变量分配内存。
+
+　　所以说，final修饰的变量可以在申明的时候指定初始值，也可以再静态初始化块中指定初始值；final修饰的实例变量除了在申明的时候指定初始值，还可以在构造器或者在普通初始化块中指定初始值。
+
+　　需要注意的是： 指定初始值只能在一处进行，不可既在申明的时候指定，又在初始化块中指定。
+
+　　
+package fianlFieldCase;
+
+public class Test {
+
+    //实例field，在申明时赋值了
+    private final String str = "java";
+    
+    //实例field，在申明时未赋值
+    private final String str2;
+    
+    //实例field，在申明时未赋值
+    private final int i;
+    
+    //类field，在申明时赋值了
+    private static final int i2 = 2;
+    
+    private static final int i3;
+    
+    {
+        //在普通初始化块中给实例field赋值
+        str2 = "normalFinalField";
+    }
+    
+    static
+    {
+        //在静态初始化块中给类field指定初始值
+        i3 = 3;
+    }
+    public Test()
+    {
+        //在构造器中给实例field赋值
+        i = 1;        
+        
+        //在构造器中给已经在初始化中赋了值的str2重新赋值，将会报编译错。
+        //str2 = "re";
+    }
+}
+　　注意： final修饰的成员变量必须显式进行初始化，若与普通成员变量一样，由系统给出默认值，而此变量又是不可变的，那这个变量也就失去意义了。所以JAVA语法规定final修饰的成员变量必须显式初始化。
+
+三、final局部变量
+
+ 　　final修饰的局部变量可以在申明的时候赋值，也可以在后面赋值，但只能赋值一次，否则会编译不通过。同样final修饰的形参也是的，不可以重新进行赋值，因为形参是在该方法被调用的时候被赋值的。　　
+
+package fianlFieldCase;
+
+public class FinalField {
+    
+    public static void print(final String str)
+    {
+        //str不能被重新赋值
+        //str = "android";
+        System.out.println(str);
+    }
+    public static void main(String[] args) {
+        //final修饰的局部变量在申明的时候就被初始化了
+        final String s = "java";
+        
+        //若重新赋值，便会编译不通过
+        //s = "python";
+        
+        //final修饰的局部变量，没有被初始化
+        final int i;
+        
+        //可以在后面进行初始化
+        i = 1;
+        
+        //重新赋值，便会报错
+        //i = 2;
+        
+        print("Ruby");
+    }
+}
+四、final修饰基本类型变量和引用类型变量的区别　　
+
+　　当使用final修饰基本类型变量时，不能对基本类型变量进行重新赋值，因此基本类型变量不能被改变。
+
+　　当final修饰引用类型变量时，它仅仅是一个引用，存放的是对象的地址，那这个地址是不能变的，即不能指向新的地址，但指向的这个对象里面的值其实是可以改变的。

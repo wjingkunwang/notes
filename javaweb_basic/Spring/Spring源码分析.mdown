@@ -1,0 +1,93 @@
+##搭建一个简单的Spring－maven项目
+###pom文件
+```
+ <!-- 添加Spring依赖 -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>3.1.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>3.1.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>3.1.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>3.1.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.8</version>
+        </dependency>
+    </dependencies>
+```
+
+###applicationContext.xml文件
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+     http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/tx
+     http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/aop
+     http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+     http://www.springframework.org/schema/context
+     http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="student" class="com.ioc.domain.Student">
+    <property name="name" value="John"/>
+    <property name="age" value="20"/>
+    </bean>
+</beans>
+```
+
+###Student、测试类
+```
+@Data
+public class Student {
+    private String name;
+    private Integer age;
+}
+
+public class Test {
+    public static void main(String[] args) {
+//     	  //资源
+//        ClassPathResource resource = new ClassPathResource("applicationContext.xml");
+//        //容器
+//        DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+//        //BeanDefinition读取器,通过回调配置给容器
+//        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+//        //读取配置
+//        reader.loadBeanDefinitions(resource);
+
+		  //使用如下获得bean方式走读代码
+      	  ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+          Student student = (Student) context.getBean("student");
+    }
+}
+```
+##Spring IOC源码分析
+###IOC基本流程及所需要的组件
+
+1. 加载资源 （组件：Resource）
+
+2. 容器（组件：BeanFactory、ApplicactionContext）
+
+3. 读取配置 （组件：BeanDefinitionReader）
+
+4.
+
+

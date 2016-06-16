@@ -1,0 +1,5 @@
+###IDEA问题
+1. @Slf4j注解时，找不到log
+
+>确保安装Lombok后，然后设置：Setting - Compiler - Annotation Processors - Enable annotation processing. 
+
