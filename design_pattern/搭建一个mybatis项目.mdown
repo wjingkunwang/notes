@@ -1,0 +1,125 @@
+###Student
+```
+@Data
+public class Student {
+    private Long id;
+    private String name;
+}
+```
+###StudentDao
+```
+public interface StudentDao {
+
+        public void insert(Student student);
+
+        public Student findUserById (int id);
+
+        public List<Student> findAllUsers();
+
+}
+```
+###StudentDaoTest
+```
+public class StudentDaoTest {
+
+    @Test
+    public void findUserById() {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        StudentDao userMapper = sqlSession.getMapper(StudentDao.class);
+        Student user = userMapper.findUserById(1);
+        System.out.println(user.toString());
+    }
+    //Mybatis 通过SqlSessionFactory获取SqlSession, 然后才能通过SqlSession与数据库进行交互
+    private static SqlSessionFactory getSessionFactory() {
+        SqlSessionFactory sessionFactory = null;
+        String resource = "configuration.xml";
+        try {
+            sessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sessionFactory;
+    }
+}
+```
+###configuration.xml
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- 指定properties配置文件， 我这里面配置的是数据库相关 -->
+    <properties resource="dbConfig.properties"></properties>
+
+
+    <!-- 指定Mybatis使用log4j -->
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+    </settings>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/student"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 映射文件，mybatis精髓， 后面才会细讲 -->
+    <mappers>
+        <mapper resource="userDao-mapping.xml"/>
+    </mappers>
+</configuration>
+```
+###userDao-mapping.xml
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.StudentDao">
+    <select id="findUserById" resultType="student" >
+        select * from student where id = #{id}
+    </select>
+</mapper>
+```
+###maven依赖
+```
+<!-- 添加log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.16</version>
+</dependency>
+
+<!-- 添加mybatis -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.2.6</version>
+</dependency>
+
+<!-- 添加mysql驱动 -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.12</version>
+</dependency>
+<!-- 添加junit驱动 -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+</dependency>
+
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.14.8</version>
+</dependency>
+```

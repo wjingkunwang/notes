@@ -1,0 +1,417 @@
+##搭建一个简单的Mybatis+Maven项目
+###Maven依赖
+```
+  <!-- 添加log4j -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+        <!-- 添加mybatis -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.2.6</version>
+        </dependency>
+        <!-- 添加mysql驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.12</version>
+        </dependency>
+        <!-- 添加junit驱动 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.8</version>
+        </dependency>
+
+```
+###代码
+```
+
+@Data
+public class Student {
+    private Long id;
+    private String name;
+}
+
+public interface StudentDao {
+        public void insert(Student student);
+        public Student findUserById (int id);
+        public List<Student> findAllUsers();
+}
+
+public class StudentDaoTest {
+    @Test
+    public void findUserById() {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        StudentDao userMapper = sqlSession.getMapper(StudentDao.class);
+        Student user = userMapper.findUserById(1);
+        System.out.println(user.toString());
+    }
+
+    //Mybatis 通过SqlSessionFactory获取SqlSession, 然后才能通过SqlSession与数据库进行交互
+    private static SqlSessionFactory getSessionFactory() {
+        SqlSessionFactory sessionFactory = null;
+        String resource = "configuration.xml";
+        try {
+            sessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sessionFactory;
+    }
+}
+```
+###配置文件
+```
+//configuration.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- 指定properties配置文件， 我这里面配置的是数据库相关 -->
+    <properties resource="dbConfig.properties"></properties>
+    <!-- 指定Mybatis使用log4j -->
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+    </settings>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/student"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 映射文件，mybatis精髓， 后面才会细讲 -->
+    <mappers>
+        <mapper resource="userDao-mapping.xml"/>
+    </mappers>
+</configuration>
+//userDao-mapping.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.StudentDao">
+    <select id="findUserById" resultType="com.mybatis.Student" >
+        select * from student where id = #{id}
+    </select>
+</mapper>	
+```
+##通过SqlSessionFactory获取SqlSession
+###执行流程
+![](http://7xpxnz.com1.z0.glb.clouddn.com/Mybaits%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B1.png)
+###源码走读
+
+1. 获取reader
+```
+sessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource));
+Resources.getResourceAsReader(resource)
+```
+
+2. 获取SqlSessionFactory
+
+2.1 build()方法
+```
+//调用SqlSessionFactoryBuilder.build()方法获取SqlSessionFactory
+public SqlSessionFactory build(Reader reader, String environment, Properties properties) { 
+		//获取解析器
+ 		XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+ 		//解析配置文件
+      return build(parser.parse());
+}
+```
+#####解析配置返回configuration
+```
+	//XMLConfigBuilder.parse()解析配置返回configuration
+	public Configuration parse() {
+    if (parsed) {
+      throw new BuilderException("Each XMLConfigBuilder can only be used once.");
+    }
+    parsed = true;
+    //configuration为根节点
+    parseConfiguration(parser.evalNode("/configuration"));
+    //解析完成后返回configration
+    return configuration;
+  }
+
+  private void parseConfiguration(XNode root) {
+  	//接下来有10个子节点，注意在configuration.xml中配置子节点的时候得按照解析的顺序
+  	//这些节点的解析后面的博客再走读
+    try {
+      propertiesElement(root.evalNode("properties")); //issue #117 read properties first
+      typeAliasesElement(root.evalNode("typeAliases"));
+      pluginElement(root.evalNode("plugins"));
+      objectFactoryElement(root.evalNode("objectFactory"));
+      objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      settingsElement(root.evalNode("settings"));
+      environmentsElement(root.evalNode("environments")); // read it after objectFactory and objectWrapperFactory issue #631
+      databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      typeHandlerElement(root.evalNode("typeHandlers"));
+      mapperElement(root.evalNode("mappers"));
+    } catch (Exception e) {
+      throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
+    }
+  }
+```
+#####获得SqlSessionFactory
+  //通过configuration获得SqlSessionFactory
+  public SqlSessionFactory build(Configuration config) {
+    return new DefaultSqlSessionFactory(config);
+  }
+
+####获取sqlSession
+#####调用openSession()方法
+```
+//调用SqlSessionFactory的openSession()方法
+public SqlSession openSession() {
+	//主要看看这个方法
+    return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
+}
+```
+######获取SqlSession
+```
+//通过DefaultSqlSessionFactoryz获取SqlSession
+private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
+    Transaction tx = null;
+    try {
+      //Environment子节点获得数据连接的配置还有事务的配置
+      final Environment environment = configuration.getEnvironment();
+      final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      //获取执行器
+      final Executor executor = configuration.newExecutor(tx, execType);
+      return new DefaultSqlSession(configuration, executor, autoCommit);
+    } catch (Exception e) {
+      closeTransaction(tx); // may have fetched a connection so lets call close()
+      throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+    } finally {
+      ErrorContext.instance().reset();
+    }
+  }
+```
+######获取Executor
+```
+  //Configurationz中获取执行器（Executor）
+  public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+    executorType = executorType == null ? defaultExecutorType : executorType;
+    executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+    Executor executor;
+    if (ExecutorType.BATCH == executorType) {
+      executor = new BatchExecutor(this, transaction);
+    } else if (ExecutorType.REUSE == executorType) {
+      executor = new ReuseExecutor(this, transaction);
+    } else {
+      executor = new SimpleExecutor(this, transaction);
+    }
+    //缓存配置,如下
+    /* 
+    	<select id="findUserById"  useCache="true" resultType="com.mybatis.Student">
+        select * from student where id = #{id}
+    	</select>
+	 /*
+    if (cacheEnabled) {
+      executor = new CachingExecutor(executor);
+    }
+    //执行拦截器 其实就是plugins子节的配置
+    executor = (Executor) interceptorChain.pluginAll(executor);
+    return executor;
+  }
+```
+**通过上面的操作变获得有含有confingration,Executor,transaction,数据库连接等的sqlsession。**
+
+##获取MapperProxy
+###执行流程
+![](http://7xpxnz.com1.z0.glb.clouddn.com/Mybaits%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B2.png)
+###源码走读
+```
+StudentDao userMapper = sqlSession.getMapper(StudentDao.class);
+```
+####获取MapperProxy
+  //获取MapperProxy最终交给mapperRegistry代理
+  public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    return mapperRegistry.getMapper(type, sqlSession);
+  }
+
+  public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
+    if (mapperProxyFactory == null)
+      throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
+    try {
+    	//这里使用反射
+      return mapperProxyFactory.newInstance(sqlSession);
+    } catch (Exception e) {
+      throw new BindingException("Error getting mapper instance. Cause: " + e, e);
+    }
+  }
+
+#####反射获取
+  protected T newInstance(MapperProxy<T> mapperProxy) {
+    return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
+  }
+
+  public T newInstance(SqlSession sqlSession) {
+    final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache);
+    return newInstance(mapperProxy);
+  }
+
+##获取Excutor
+###执行流程
+![](http://7xpxnz.com1.z0.glb.clouddn.com/Mybaits%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B3.png)
+###源码走读
+####invoke()
+```
+	//MapperProxy在执行时出发invoke()
+	 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    if (Object.class.equals(method.getDeclaringClass())) {
+      try {
+        return method.invoke(this, args);
+      } catch (Throwable t) {
+        throw ExceptionUtil.unwrapThrowable(t);
+      }
+    }
+    final MapperMethod mapperMethod = cachedMapperMethod(method);
+    return mapperMethod.execute(sqlSession, args);
+  }
+
+  private MapperMethod cachedMapperMethod(Method method) {
+  	//缓存方
+    MapperMethod mapperMethod = methodCache.get(method);
+    if (mapperMethod == null) {
+      mapperMethod = new MapperMethod(mapperInterface, method, sqlSession.getConfiguration());
+      methodCache.put(method, mapperMethod);
+    }
+    return mapperMethod;
+  }
+```
+####execute()
+```
+//SimpleExecutor.execute()
+ public Object execute(SqlSession sqlSession, Object[] args) {
+    Object result;
+    if (SqlCommandType.INSERT == command.getType()) {
+      Object param = method.convertArgsToSqlCommandParam(args);
+      result = rowCountResult(sqlSession.insert(command.getName(), param));
+    } else if (SqlCommandType.UPDATE == command.getType()) {
+      Object param = method.convertArgsToSqlCommandParam(args);
+      result = rowCountResult(sqlSession.update(command.getName(), param));
+    } else if (SqlCommandType.DELETE == command.getType()) {
+      Object param = method.convertArgsToSqlCommandParam(args);
+      result = rowCountResult(sqlSession.delete(command.getName(), param));
+    } else if (SqlCommandType.SELECT == command.getType()) {
+      if (method.returnsVoid() && method.hasResultHandler()) {
+        executeWithResultHandler(sqlSession, args);
+        result = null;
+      } else if (method.returnsMany()) {
+        result = executeForMany(sqlSession, args);
+      } else if (method.returnsMap()) {
+        result = executeForMap(sqlSession, args);
+      } else {
+        Object param = method.convertArgsToSqlCommandParam(args);
+        //调用
+        result = sqlSession.selectOne(command.getName(), param);
+      }
+    } else {
+      throw new BindingException("Unknown execution method for: " + command.getName());
+    }
+    if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
+      throw new BindingException("Mapper method '" + command.getName() 
+          + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+    }
+    return result;
+  }
+```
+####Executor执行
+```
+  //在sqlSession一系列调用后转向Executor执行
+  public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
+    try {
+      MappedStatement ms = configuration.getMappedStatement(statement);
+      List<E> result = executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
+      return result;
+    } catch (Exception e) {
+      throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
+    } finally {
+      ErrorContext.instance().reset();
+    }
+  }
+```
+####Executor执行
+```
+  public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+  	//sql片段select * from student where id = ?
+    BoundSql boundSql = ms.getBoundSql(parameterObject);
+    CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+    //
+    return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+  }
+
+  public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+    ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
+    if (closed) throw new ExecutorException("Executor was closed.");
+    if (queryStack == 0 && ms.isFlushCacheRequired()) {
+      clearLocalCache();
+    }
+    List<E> list;
+    try {
+      queryStack++;
+      list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
+      if (list != null) {
+        handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
+      } else {
+        list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
+      }
+    } finally {
+      queryStack--;
+    }
+    if (queryStack == 0) {
+      for (DeferredLoad deferredLoad : deferredLoads) {
+        deferredLoad.load();
+      }
+      deferredLoads.clear(); // issue #601
+      if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
+        clearLocalCache(); // issue #482
+      }
+    }
+    return list;
+  }
+```
+####doQuery()
+```
+  //最终调用SimpleExecutor.doQuery()
+  public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
+    Statement stmt = null;
+    try {
+      Configuration configuration = ms.getConfiguration();
+      StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      stmt = prepareStatement(handler, ms.getStatementLog());
+      return handler.<E>query(stmt, resultHandler);
+    } finally {
+      closeStatement(stmt);
+    }
+  }
+```
+####query()
+```
+//PreparedStatementHandler.query()
+public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+PreparedStatement ps = (PreparedStatement) statement;
+ps.execute();
+//返回结果集
+return resultSetHandler.<E> handleResultSets(ps);
+}
+```

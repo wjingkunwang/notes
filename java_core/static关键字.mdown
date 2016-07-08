@@ -1,0 +1,52 @@
+###final和static final修饰成员变量的区别
+
+final称为常量，static final称为全局常量。
+
+成员变量是随类初始化或对象初始化而初始化的。当类初始化的时候，会给类变量分配内存；当对象初始化的时候，会给实例变量分配内存。
+
+final修饰成员变量可以在申明的时候指定初始值，还可以在构造器或者在普通初始化块中指定初始值。
+
+static final修饰的变量可以在申明的时候指定初始值，也可以在静态初始化块中指定初始值。
+
+由此可以看出final修饰的成员变量的值可以在同一类的不同对象中改变，而static final修饰的成员变量在同一类不同对象中不能改变。
+
+```
+public class FinalDemo {
+
+    private static final String A;
+    private static final String A1 = "static final直接赋值";
+
+    private  final String B;
+    private  final String B1 = "final直接赋值";
+
+    static {
+        A= "静态初始化块初始化";
+    }
+
+//    {
+//        B= "初始化块初始化";
+//    }
+
+    public FinalDemo(String b) {
+        B = b;
+    }
+
+    public static void main(String[] args) {
+        FinalDemo demo1 = new FinalDemo("构造方法初始化demo1");
+        System.out.println(demo1.B);
+        FinalDemo demo2 = new FinalDemo("构造方法初始化demo2");
+        System.out.println(demo2.B);
+
+
+        System.out.println(FinalDemo.A);
+        System.out.println(FinalDemo.A1);
+
+    }
+
+}
+```
+
+
+###static
+创建不可变类要使用final关键字。不可变类是指它的对象一旦被创建了就不能被更改了。String是不可变类的代表。不可变类有很多好处，譬如它们的对象是只读的，可以在多线程环境下安全的共享，不用额外的同步开销等等。
+final和static

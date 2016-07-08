@@ -1,0 +1,154 @@
+###模式定义：
+>使多个对象都有计划处理请求，从而避免请求的发送者和接受者之间的耦合关系。将
+这些对象连成一条链，并沿着这条链传递该请求，直到有一个对象处理它为止。
+
+###模式场景
+1. 打牌时，轮流出牌
+
+2. 接力赛跑
+
+3. 大学时，奖学金审核
+
+###模式结构
+![模式结构](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F1.png)
+
+1. Handler:定义职责的接口，通常在这里定义处理请求的方法，可以在这里实现后继链。
+
+2. ConcreteHandler:实现职责的类，在这个类中，实现对在职责范围内请求的处理，如果不处理，就继续转发请求给后继者。
+
+3. Client:职责链的客户端，向链上的具体处理对象提交请求，让职责链负责处理。
+
+###代码实现
+模拟请假审批流程:
+提出请假申请
+3内天假期主任审批
+超过3天总经理审批
+如果:其中需要一个副总经理审批4~5天的假期,添加职责对象就行
+
+普通实现：使用if~else可以解决
+现在使用责任链实现
+
+####UML图
+![](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F2.png)
+####源码
+
+```
+@Data
+@AllArgsConstructor
+public class LeaveNote {
+    private String name;
+    private String leaveReason;
+    private int leaverDayNum;
+}
+
+public interface Handler {
+    void handLeave(LeaveNote leaveNote);
+
+    void setNextHandler(Handler h);
+}
+
+public class DirectorHandler implements Handler {
+    private Handler nextHandler;
+
+    public void handLeave(LeaveNote leaveNote) {
+        if (leaveNote.getLeaverDayNum() <= 3) {
+            System.out.println("主管同意" + leaveNote.getName() + "申请请假" + leaveNote.getLeaverDayNum() + "天,原因:" + leaveNote.getLeaveReason());
+        } else {
+            nextHandler.handLeave(leaveNote);
+        }
+    }
+
+    public void setNextHandler(Handler h) {
+        nextHandler = h;
+    }
+}
+
+public class ManagerHandler implements Handler {
+    private Handler nextHandler;
+
+    public void handLeave(LeaveNote leaveNote) {
+        System.out.println("总经理同意" + leaveNote.getName() + "申请请假" + leaveNote.getLeaverDayNum() + "天,原因:" + leaveNote.getLeaveReason());
+    }
+
+    public void setNextHandler(Handler h) {
+        nextHandler = h;
+    }
+}
+
+public class ManagerHandler implements Handler {
+    private Handler nextHandler;
+
+    public void handLeave(LeaveNote leaveNote) {
+        System.out.println("总经理同意" + leaveNote.getName() + "申请请假" + leaveNote.getLeaverDayNum() + "天,原因:" + leaveNote.getLeaveReason());
+    }
+
+    public void setNextHandler(Handler h) {
+        nextHandler = h;
+    }
+}
+
+public class Client {
+    public static void main(String[] args) {
+        LeaveNote leaveNote = new LeaveNote("小米","肚子疼",8);
+        DirectorHandler directorHandler = new DirectorHandler();
+        ViceManagerHandler viceManagerHandler = new ViceManagerHandler();
+        ManagerHandler managerHandler = new ManagerHandler();
+        //也可以通过容器来管理职责对象，不使用setNextHandler
+        directorHandler.setNextHandler(viceManagerHandler);
+        viceManagerHandler.setNextHandler(managerHandler);
+        directorHandler.handLeave(leaveNote);
+    }
+}
+
+```
+###模式的优缺点
+####模式的优点
+1. 请求者和接受者松散耦合
+	
+	在责任链模式中，请求者并不知道接受者是谁，也不知道具体如何处理
+	请求者只负责向责任链发出请求就可以了，而每个职责对象也不用管请求者或者是其他的
+	职责对象，只负责处理自己的部分，其他的就交给其他的职责对象去处理。也就是说，请求者和接受者
+	是完全接偶的。
+
+2. 动态组合职责
+	
+	责任链模式会把功能处理分散到单独的职责对象中，然后在使用的时候，就可以动态组合职责形成职责链，
+	从而可以灵活地给对象分配职责，也可以灵活地实现和改变对象的职责。
+	
+####模式的缺点
+
+1. 产生许多细粒度对象
+
+	责任链模式会把功能处理分散到单独的职责对象中，也就是每个职责对象处理一个方面的功能，要把
+	一个业务处理完，需要许多职责对象的组合，这样会产生大量的细粒度职责对象。
+
+2. 不一定能被处理
+	
+	责任链模式的每个职责对象只负责处理自己处理的那部分，因此可能会出现某个请求，把整个责任链传递完也没有职责对象处理它。这就需要在使用责任链的时候，需要提供默认的处理，并且注意构建链的有效性。
+
+###思考
+
+>模式本质：分离职责，动态组合。分离职责是前提，动态组合是精华所在。
+
+###开发中的应用场景：
+1. Java中，异常机制就是一个责任链模式，一个try可以对应多个catch,当第一个catch不匹配类型，则自动跳到第二个catch.
+
+2. Servlet开发中，过滤器的链式处理
+
+3. Struct2中，拦截器的调用也是典型的责任链模式
+
+4. JavaScript中，时间的冒泡和捕获机制。Java语言中，事件的处理采用观察者模式。
+
+###相关模式
+1. 责任链和组合模式
+两个模式可以组合使用
+
+2. 责任链和装饰者模式
+两个模式相似，从某个角度讲，可以相互模拟实现对方的功能。
+不同：一方面是目的不同，装饰者模式是要实现透明的为对象添加功能，而责任链模式是要实现发送者和接受者节藕；
+另一方面，装饰者是无限递归调用的，也可以任意多个对象来装饰功能，但是责任链模式是有一个处理就结束（标准责任链模式）。
+
+3. 责任链和策略模式
+两个模式可以组合使用
+
+

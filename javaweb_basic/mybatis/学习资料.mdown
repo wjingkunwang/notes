@@ -1,0 +1,14 @@
+文档：http://www.mybatis.org/mybatis-3/zh/index.html#
+
+深入浅出Mybatis系列（十）---SQL执行流程分析（源码篇）
+http://www.cnblogs.com/dongying/p/4142476.html
+
+
+http://chenjc-it.iteye.com/blog/1455688
+
+
+mybatis插件
+http://blog.csdn.net/hupanfeng/article/details/9247379
+
+系列文章
+http://www.lai18.com/cate/3123.html

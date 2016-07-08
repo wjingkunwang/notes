@@ -1,0 +1,191 @@
+##Java泛型由来的动机
+Java泛型可以把它看成一个便捷语法，能节省你某些Java类型转换上的操作：
+
+```
+List<Apple> box = new ArraryList<Apple>();
+Apple apple = box.get(0);
+```
+上面的代码表示：box是一个装有Apple对象的List。get方法返回一个Apple对象实例，这个过程不需要进行类型转换。没有泛型，上面的代码需要写成这样：
+
+
+```
+List box = new ArraryList();
+Apple apple = (Apple)box.get(0);
+```
+
+很明显，泛型的主要好处就是:**让编译器保留参数的类型信息，执行类型检查，执行类型转换操作：编译器保证了这些类型转换的绝对无误。**
+
+##泛型的构成
+1. 泛型类声明
+
+2. 泛型接口声明
+
+3. 泛型方法声明
+
+4. 泛型构造器声明
+
+###泛型类和接口
+如果一个类或接口上有一个或多个类型变量，那它就是泛型。类型变量由尖括号界定，放在类或接口名的后面：
+
+```
+public interface List<E> extends Collection<E> {}
+```
+
+简单的说，类型变量扮演的角色就如同一个参数，它提供给编译器用来类型检查的信息。
+
+Java类库里的很多类，例如整个Collection框架都做了泛型化的修改。例如，我们在上面的第一段代码里用到的List接口就是一个泛型类。在那段代码里，box是一个List<Apple>对象，它是一个带有一个Apple类型变量的List接口的类实现的实例。编译器使用这个类型变量参数在get方法被调用、返回一个Apple对象时自动对其进行类型转换。
+实际上，这新出现的泛型标记，或者说这个List接口里的get方法是这样的：
+
+```
+    E get(int index);
+```
+
+get方法实际返回的是一个类型为T的对象，T是在List<E>声明中的类型变量
+
+###泛型方法和构造器
+非常的相似，如果方法和构造器上声明了一个或多个类型变量，它们也可以泛型化。
+
+```
+public static <T>  T getFirst(List<T> list);
+```
+这个方法将会接受一个List<T>类型的参数，返回一个T类型的对象。
+
+###泛型的作用
+1. 类型安全的写入数据
+
+2. 类型安全的读取数据
+
+3. 遍历
+
+4. 自动封装(Autoboxing)和自动拆封(Autounboxing)
+
+```
+例子：
+List<String> list = new ArrayList<String>();
+        list.add("123");
+        list.add(123);//编译报错
+
+        String string = list.get(0);
+
+        for (String str: list){
+            System.out.println(str);
+        }
+
+
+        List<Integer> ints = new ArrayList<Integer>();
+        ints.add(0);
+        ints.add(1);
+        int sum = 0;
+        for (int i : ints) {
+            sum += i;
+        }
+```
+
+###子类型
+![继承类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E6%B3%9B%E5%9E%8B.jpg)
+####Java继承
+
+```
+Java继承中我们可以这样写：
+ Apple a = ...;
+ Fruit f = a;
+```
+####泛型类型的子类型
+	如果一个Apple对象的实例可以被赋给一个Fruit对象的声明,就像上⾯看到的, 那么,List<Apple> 和 a List<Fruit>之间⼜是个什么关系呢?更通用些,如果类型A是类型B的⼦类型，那么C<A>和C<B>是啥关系?
+**没有关系，泛型类型和其是否子类型没有关系**
+􏱗􏱄􏲍􏲎􏱇􏱈􏰑􏰵􏰷􏲁这意味着下⾯的这段代码是无效的:
+```
+List<Apple> apples = ...;
+List<Fruit> fruits = apples;
+```
+下⾯的同样也不允许:
+```
+List<Apple> apples;
+List<Fruit> fruits = ...;
+apples = fruits;
+```
+为什么?⼀个苹果是⼀个⽔果,为什么⼀箱苹果不能是一箱⽔果?在某些事情上,这种说法可以成立,但在类型(类)封装的状态和操作上不成立。如果把一箱苹果当成一箱⽔果会发⽣什么情况?
+```
+List<Apple> apples = ...;
+List<Fruit> fruits = apples;
+fruits.add(new Strawberry());
+```
+如果可以这样的话,我们就可以在list⾥里装⼊入各种不同的⽔果子类型,这是绝对 不允许的。另外⼀种⽅方式会让你有更直观的理解:一箱⽔果不是⼀箱苹果,因为它有可能是一箱另外一种⽔果,比如草莓(子类型)。
+
+	这是一个需要注意的问题吗?
+**应该不是个大问题。而程序员对此感到意外的最⼤原因是数组和泛型类型上⽤法的不⼀致。对于泛型类型,它们和类型的子类型之间是没什么关系的。而对于数组,它们和⼦类型是相关的:如果类型A是类型B的子类型,那么A[]是B[] 的⼦类型。**
+```
+Apple[] apples = ...;
+Fruit[] fruits = apples;
+```
+可是稍等一下!如果我们把前面的那个议论中暴露出的问题放在这里,我们仍 然能够在一个apple类型的数组中加⼊入strawberrie(草莓)对象:
+```
+Apple[] apples = new Apple[1];
+Fruit[] fruits = apples;
+fruits[0] = new Strawberry();
+```
+这样写真的可以编译,但是在运⾏行时抛出ArrayStoreException异常。因为数组的这特点,在存储数据的操作上,Java运⾏行时需要检查类型的兼容性。这种检查,很显然,会带来一定的性能问题,你需要明⽩这一点。重申⼀下,泛型使用起来更安全,能“纠正”Java数组中这种类型上的缺陷。
+
+###通配符\在本⽂的前⾯的部分里已经说过了泛型类型的子类型的不相关性。但有些时候,我们希望能够像使⽤普通类型那样使⽤泛型类型。
+
+####向上转型一个泛型对象的引⽤
+
+	例如：假设我们有很多箱⼦,每个箱⼦⾥都装有不同的水果,我们需要找到⼀种⽅法能够通⽤的处理任何⼀箱水果。更通俗的说法,A是B的子类型,我们需要找到⼀种⽅法能够将C<A>类型的实例赋给一个C<B>类型的声明。为了完成这种操作,我们需要使⽤带有通配符的扩展声明,就像下⾯的例⼦⾥那样:
+```
+List<Apple> apples = new ArrayList<Apple>();
+List<? extends Fruit> fruits = apples;
+```
+**“? extends”是泛型类型的子类型相关性成为现实:Apple是Fruit的子类型, List<Apple> 是 List<? extends Fruit>的子类型。**
+
+####向下转型一个泛型对象的引⽤
+
+现在我来介绍另外⼀种通配符:? super。如果类型B是类型A的超类型(⽗类型),那么C<B> 是 C<? super A> 的子类型:
+```
+List<Fruit> fruits = new ArrayList<Fruit>();
+List<? super Apple> = fruits;
+```
+#####? extends
+让我们重新看这个例⼦,其中谈到了Java数组的子类型相关性:
+```
+Apple[] apples = new Apple[1];
+Fruit[] fruits = apples;
+fruits[0] = new Strawberry();
+```
+就像我们看到的,当你往一个声明为Fruit数组的Apple对象数组⾥加⼊Strawberry对象后,代码可以编译,但在运⾏时抛出异常。现在我们可以使⽤通配符把相关的代码转换成泛型:因为Apple是Fruit的一个⼦ 类,我们使⽤? extends 通配符,这样就能将一个List<Apple>对象的定义赋到⼀个List<? extends Fruit>的声明上:
+```
+List<Apple> apples = new ArrayList<Apple>();
+List<? extends Fruit> fruits = apples;
+fruits.add(new Strawberry());
+```
+这次,代码就编译不过去了!Java编译器会阻⽌止你往一个Fruit list⾥加⼊ strawberry。在编译时我们就能检测到错误,在运⾏时就不需要进⾏检查来确保往列表⾥加⼊不兼容的类型了。即使你往list⾥加⼊Fruit对象也不⾏:
+```
+fruits.add(new Fruit());
+```
+你没有办法做到这些。事实上你不能够往一个使⽤了? extends的数据结构⾥写 ⼊任何的值。原因⾮常的简单,你可以这样想:这个? extends T 通配符告诉编译器我们在处理一个类型T的子类型,但我们不知道这个子类型究竟是什么。因为没法确。另⼀⽅⾯,因为我们知道,不论它是什么类型,它总是类型T的子类型,当我们在读取数据时,能确保得到的数据是一个T类型的实例:定,为了保证类型安全,我们就不允许往⾥⾯加⼊任何这种类型的数据。
+```
+Fruit get = fruits.get(0);
+```
+#####? super
+使⽤ ? super 通配符⼀般是什么情况?让我们先看看这个:
+```
+List<Fruit> fruits = new ArrayList<Fruit>();
+List<? super Apple> = fruits;
+```
+我们看到fruits指向的是一个装有Apple的某种超类(supertype)的List。同样的,既然这个未知的类型即是Apple,也是FushiApple的超类,我们就可以 写⼊:我们不知道究竟是什么超类,但我们知道Apple和任何Apple的⼦类都跟它的类
+型兼容
+```
+fruits.add(new Apple());
+fruits.add(new FushiApple());
+```
+如果我们想往⾥⾯加⼊Apple的超类,编译器就会警告你:
+```
+fruits.add(new Fruit());
+fruits.add(new Object());
+```
+因为我们不知道它是怎样的超类,所有这样的实例就不允许加⼊。从这种形式的类型⾥获取数据⼜是怎么样的呢?结果表明,你只能取出Object 实例:因为我们不知道超类究竟是什么,编译器唯⼀能保证的只是它是个Object,因为Object是任何Java类型的超类。 
+
+总结 ? extends 和  ? super 通配符的特征,我们可以得出以下结论:
+
+1. 如果你想从一个数据类型⾥获取数据,使⽤?extends通配符
+
+2. 如果你想把对象写⼊一个数据结构⾥,使⽤?super通配符 ▪ 如果你既想存,⼜想取,那就别⽤通配符。

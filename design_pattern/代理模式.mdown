@@ -1,0 +1,53 @@
+###代理模式意图
+>所谓代理就通过引用一个新的对象来实现对真实对象的操作或者将新的对象当做真实对象的一个替身，这种实现的机制就是代理模式，通过引用代理对象来访问真实对象就是代理模式的设计动机。
+
+###引用
+1. 远程代理（Remote  Proxy）为一个位于不同的地址空间的对象提供一个本地的代理对象。这个不同的地址空间可以是在同一台主机中，也可是在另一台主机中，远程代理又叫做大使(Ambassador)
+
+2.  虚拟代理（Virtual Proxy）根据需要创建开销很大的对象。如果需要创建一个资源消耗较大的对象，先创建一个消耗相对较小的对象来表示，真实对象只在需要时才会被真正创建。 
+
+3. 保护代理（Protection Proxy）控制对原始对象的访问。保护代理用于对象应该有不同的访问权限的时候。
+
+###类图
+![代理模式类图](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F.jpg)
+
+###打印日志代理
+
+```
+public interface Subject {
+    void print();
+}
+
+public class Proxy implements Subject {
+
+    private Subject subject;
+
+    public Proxy(Subject subject) {
+        this.subject = subject;
+    }
+
+    public void print() {
+        System.out.println("我是苦逼代理类,我来打印日志,开始打印日志");
+        subject.print();
+        System.out.println("打印日志完成,我好累!");
+    }
+}
+public class RealSubject implements Subject {
+
+    public void print() {
+        System.out.println("我不想打印日志,让我的代理类来打印吧");
+    }
+}
+
+public class Client {
+    public static void main(String[] args) {
+        Subject subject = new RealSubject();
+        Subject proxy = new Proxy(subject);
+        proxy.print();
+    }
+}
+结果：
+我是苦逼代理类,我来打印日志,开始打印日志
+我不想打印日志,让我的代理类来打印吧
+打印日志完成,我好累!
+```

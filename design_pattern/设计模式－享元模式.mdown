@@ -1,0 +1,100 @@
+###模式定义：
+>引用共享技术有效的支持大量细粒度颗粒。
+
+###模式场景
+1. 五子棋，五子棋除去颜色不一样外剩下的全都一样，我们不需要每次都去创建一个新的五子棋，我们只需要每次改变它的颜色即可。
+
+###模式结构
+![模式结构](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F1.png)
+
+####源码
+
+1. Flyweight:享元接口，通过这个接口Flyweight可以接受并作用于外部状态。痛过这个接口可以传入外部的状态，在享元对象的方法处理中可能会使用这些外部的数据。
+
+2. ConcreteFlyweight:具体的享元实现对象，必须是共享的，需要封装Flyweight的内部状态。
+
+3. UnshareConcreteFlyweight:非共享的享元实现对象，并不是所有的Flyweight实现对象都需要共享。非共享的享元实现对象通常是对享元对象的组合对象。
+
+4. FlyweightFactoty:享元工厂，主要用来创建并管理共享的享元对象，并对外提供访问共享享元的接口。
+
+5. Client: 享元客户端，主要的工作就是维持一个对Flyweight的引用，计算或存储享元的外部状态，当然这里可访问共享和不共享的Flyweight对象。
+
+###代码实现
+####UML图
+![](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F2.png)
+
+####源码
+```
+public interface ChessFlyWeight {
+    void setColor(String c);
+
+    String getColor();
+
+    void display(Coordinate c);
+
+}
+
+@Data
+class ConcreteChess implements ChessFlyWeight {
+    private String color;
+    public ConcreteChess(String color) {
+        super();
+        this.color = color;
+    }
+    public void display(Coordinate c) {
+        System.out.println("棋子颜色：" + color);
+        System.out.println("棋子位置：" + c.getX() + "----" + c.getY());
+    }
+}
+
+
+public class ChessFlyWeightFactory {
+	//享元池
+	private static Map<String,ChessFlyWeight> map = new HashMap<String, ChessFlyWeight>();
+	
+	public  ChessFlyWeight  getChess(String color){
+		if(map.get(color)!=null){
+			return map.get(color);
+		}else{
+			ChessFlyWeight cfw = new ConcreteChess(color);
+			map.put(color, cfw);
+			return cfw;
+		}
+	}
+}
+
+@Data
+@AllArgsConstructor
+public class Coordinate {
+    private int x, y;
+}
+
+
+public class Client {
+    public static void main(String[] args) {
+        ChessFlyWeightFactory factory = new ChessFlyWeightFactory();
+        ChessFlyWeight chess1 = factory.getChess("黑色");
+        ChessFlyWeight chess2 = factory.getChess("黑色");
+        System.out.println(chess1);
+        System.out.println(chess2);
+
+        System.out.println("增加外部状态的处理===========");
+        chess1.display(new Coordinate(10, 10));
+        chess2.display(new Coordinate(20, 20));
+    }
+}
+```
+###模式的优缺点
+####模式的优点
+1. 减少对象数量，节省内存空间。
+
+####模式的缺点
+2. 维护共享对象，需要额外开销。（比如：一个线程来回收垃圾）
+
+###思考
+>模式本质：分离和共享
+
+###开发中的应用场景：
+1. 享元模式由于其共享的特征，可以在任何“池”中操作，比如：线程池，数据库连接池。
+
+2. String类的设计也是享元模式。

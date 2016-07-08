@@ -1,0 +1,182 @@
+###模式定义：
+>用一个中介对象来封装一系列的对象交互。中介者使得各个对象不需要显示地相互引用，从而使其耦合松散，而且可以独立的改变它们之间的交互。
+
+###模式场景
+1. 电脑主板，电脑的CPU、内存、显卡等配件之间不需要相互交互，通过主板即可。
+
+2. 中介大家熟悉吗？房产中介
+
+###核心
+	如果一个系统中对对象之间的联系呈现网状结构，对象之间存在大量多对多关系，将导致关系及其复杂，这些对象称为“同事对象”。
+
+![](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F2.png)
+
+	我们可以引入一个中介者对象，是各个同事对象只跟中介者对象打交道，将其复杂的网络结构化解为如下的形状结构。
+![](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F3.png)
+
+###模式结构
+![模式结构](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F4.png)
+
+1. Mediator:中介者接口。在里面定义各个同事之间交互需要的方法，可以是公共的通信方法，也可以是小范围的交互方法。
+
+2. ConcreteMeditor:具体中介者实现对象。它需要了解并维护各个同事对象，并负责具体的协调各同事对象的交互关系。
+
+3. Colleague:同事类的定义，通常为抽象类，主要约束同事对象的类型，并实现一些具体同事类之间的公共功能，比如，每个具体同事类都应该知道中介者对象，也就是具体同事类都会持有中介者对象，都可以到这个类里面。
+
+4.ConcreteColleague:具体的同事类，实现自己的业务，需要与其他同事通信时候，就与持有的中介者通信，中介者会负责与其他同事类交互。
+
+###代码实现
+####UML图
+![](http://7xpxnz.com1.z0.glb.clouddn.com/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%8D%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F1.1.png)
+
+####源码
+
+```
+public interface Mediator {
+
+    void command(Department department);
+}
+
+
+@Setter
+public class President implements Mediator {
+    private Financial financial;
+    private Market market;
+    private Development development;
+
+
+    public void command(Department department) {
+        if (department instanceof Market) {
+            financial.selfAction();
+        }
+    }
+}
+
+//同事类的接口
+public abstract class Department {
+    //持有中介者(总经理)的引用
+    private Mediator mediator;
+
+    public Department(Mediator mediator) {
+        this.mediator = mediator;
+    }
+
+    public Mediator getMediator() {
+        return mediator;
+    }
+
+    //做本部门的事情
+    void selfAction(){
+
+    }
+    //向总经理发出申请
+    void outAction(){
+
+    }
+}
+
+
+public class Development extends Department {
+
+    public Development(Mediator m) {
+        super(m);
+   }
+
+    public void outAction() {
+        System.out.println("汇报工作！没钱了，需要资金支持！");
+    }
+
+    public void selfAction() {
+        System.out.println("专心科研，开发项目！");
+    }
+}
+
+public  class Financial extends Department {
+
+    public Financial(Mediator m) {
+        super(m);
+    }
+
+    public void outAction() {
+        System.out.println("汇报工作！没钱了，钱太多了！怎么花?");
+    }
+
+    public void selfAction() {
+        System.out.println("数钱！");
+    }
+}
+
+public class Market extends Department {
+
+    public Market(Mediator mediator) {
+        super(mediator);
+    }
+
+
+    public void outAction() {
+        System.out.println("汇报工作！项目承接的进度，需要资金支持！");
+        getMediator().command(this);
+    }
+
+    public void selfAction() {
+        System.out.println("跑去接项目！");
+    }
+}
+
+
+public class Client {
+	public static void main(String[] args) {
+		President mediator = new President();
+		Market   market = new Market(mediator);
+		Development development = new Development(mediator);
+		Financial financial = new Financial(mediator);
+
+		mediator.setFinancial(financial);
+		mediator.setDevelopment(development);
+		mediator.setMarket(market);
+
+		market.selfAction();
+		market.outAction();
+	}
+}
+
+
+```
+###模式的优缺点
+####模式的优点
+1. 松散耦合
+	
+	中介者模式通过把多个同事对象之间的交互封装到中介对象里面，从而使得同时对象之间松散耦合，基本上可以做到互不依赖。这样一来，同时对象就可以独立的变化和复用，不再“牵一发动全身”
+
+2. 集中控制交互
+ 	
+ 	多个同事对象的交互，被封装在中介者对象里面集中管理，使得这些交互行为发生变化的时候，只需要修改中介者就可以了。
+
+3. 多对多变为一对多
+	没有中介者模式的时候，同事对象之间的关系通常是多对多，引入中介者对象后，中介者和同事对象的关系通常变为双向的一对多，这会让对象的关系更容易理解和实现。
+
+####模式的缺点
+1. 过多集中化
+	如果同事对象之间的交互非常多，而且比较复杂，当这些复杂性全都集中到中介者的时候，会导致中介者对象变的十分复杂，而且难于维护和管理。
+
+###思考
+
+>模式本质：封装交互
+
+###开发中的应用场景：
+1. MVC模式（其中C，控制器就是一个中介者，M和V和它打交道）
+
+2. 窗口游戏程序，窗口软件开发中窗口对象也是一个中介者对象
+
+3. Java.lang.reflect.Method#invoke()
+
+
+
+
+
+
+
+
+
+
+
